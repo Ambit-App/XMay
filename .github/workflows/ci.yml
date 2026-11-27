@@ -1,0 +1,34 @@
+name: XMay CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build & Verify XMay Core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout XMay
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Build XMay binary
+        run: go build -v -o xmay -trimpath -ldflags "-s -w -buildid=" ./main
+
+      - name: Verify XMay version output
+        run: ./xmay version
+
+      - name: Run core tests
+        run: go test -v ./core/...
